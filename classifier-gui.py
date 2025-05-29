@@ -20,6 +20,8 @@ cyan = (125,175,160)
 pink = (210,130,150)
 orange = (230,140,80)
 yellow = (215,165,90)
+neon_purple = (255, 50, 255)
+bright_red = (220, 50, 50)
 
 
 # Set up the display
@@ -277,8 +279,10 @@ try:
   tile_rect_H = int(cap_img.get_width()/10)
   tile_Rect = pygame.Rect((width_offset+(math.floor((get_pt(current_tile)-1)/10))*tile_rect_H, 
         height_offset+(((get_pt(current_tile)-1)%10)*tile_rect_H)), (tile_rect_H, tile_rect_H))
+  tile_img_Rect = pygame.Rect(WIDTH-imgscale-width_offset, height_offset, imgscale, imgscale)
 except: 
   nocap = True
+  tile_img_Rect = pygame.Rect(int((WIDTH-imgscale)/2), height_offset, imgscale, imgscale)
 
 progress, total = how_many_counted(csv_path)
 progress_bar_text = progressfont.render(f'{progress-1} / {total-1}', True, beige)
@@ -289,6 +293,7 @@ progress_bar_textRect.center = progress_bar_Rect.center
 progress_bar_textRect.top = progress_bar_textRect.top + int(HEIGHT/256)
 progress_done_Rect = progress_bar_Rect.copy()
 progress_done_Rect.width = int(progress_bar_Rect.width * progress/total)
+dots = []
 while running:
     # --- Display Handling ---
     scrn.fill(background)
@@ -349,10 +354,14 @@ while running:
       scrn.blit(tile_img, (WIDTH-imgscale-width_offset, height_offset))
       pygame.draw.rect(scrn, yellow, tile_Rect, button_outline)
 
+    for dot in dots:
+      pygame.draw.circle(scrn, bright_red, dot[0], dot[1])
+
 
     # --- Event Handling ---
     classify_event = False
     undo_event = False
+    update_custom = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -391,7 +400,7 @@ while running:
               if event.key == pygame.K_s:
                 classify_event = True
                 classify_value = custom_count
-              if event.key == pygame.K_c:
+              if event.key == pygame.K_c or event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                 classify_event = True
                 classify_value = custom_count
               if event.key == pygame.K_u:
@@ -427,24 +436,34 @@ while running:
             classify_value = custom_count
           if buttoncollision == 4:
             undo_event = True
+          remove_index = -1
+          for d in range(len(dots)):
+            if math.sqrt((mousepos[0]-dots[d][0][0])**2 + (mousepos[1]-dots[d][0][1])**2) <= dots[d][1]:
+              remove_index = d
+          if remove_index > -1:
+            del dots[remove_index]
+            custom_count = len(dots)
+            update_custom = True
+          if tile_img_Rect.collidepoint(mousepos) and not (remove_index > -1):
+            dots.append((mousepos, int(HEIGHT/128)))
+            custom_count = len(dots)
+            update_custom = True
+
+
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
       if up_timer > 0:
         up_timer -= 1
       else:
         custom_count += 1
-        buttonC_text = buttonfont.render(f'Custom: {custom_count}', True, beige)
-        buttonC_textRect = buttonC_text.get_rect()
-        buttonC_textRect.center = buttonC_Rect.center
+        update_custom = True
     elif keys[pygame.K_DOWN]:
       if down_timer > 0:
         down_timer -= 1
       else:
         if custom_count > 0:
           custom_count -= 1
-          buttonC_text = buttonfont.render(f'Custom: {custom_count}', True, beige)
-          buttonC_textRect = buttonC_text.get_rect()
-          buttonC_textRect.center = buttonC_Rect.center
+          update_custom = True
     if classify_event: 
       classify_tile(classify_value, csv_path)
       progress += 1
@@ -466,6 +485,11 @@ while running:
       progress_bar_textRect.top = progress_bar_textRect.top + int(HEIGHT/256)
       progress_done_Rect = progress_bar_Rect.copy()
       progress_done_Rect.width = int(progress_bar_Rect.width * progress/total)
+      dots = []
+    if update_custom:
+      buttonC_text = buttonfont.render(f'Custom: {custom_count}', True, beige)
+      buttonC_textRect = buttonC_text.get_rect()
+      buttonC_textRect.center = buttonC_Rect.center
 
 
 
@@ -476,5 +500,6 @@ while running:
 
 pygame.quit()
 
-
+# TODO: Add highlighting for custom count. Click to add a dot, which increments custom count. Enter to submit.
+# if you click a previous dot, it's deleted. 
 
