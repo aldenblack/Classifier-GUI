@@ -2,7 +2,7 @@
 
 This is a GUI designed to help with classifying images by the number of a given object. The intended use case is for counting fly eggs from images from a fecundity assay. Each image is split into 100 tiles, each of which should be counted according to the number of eggs more than halfway on screen. 
 
-![classifier interface](https://github.com/aldenblack/Classifier-GUI/blob/main/Classifier-GUI-screenshot.jpg?raw=true)
+![classifier interface](https://github.com/aldenblack/Classifier-GUI/blob/main/Classifier-GUI-screenshot.png?raw=true)
 
 ## How to Use
 
