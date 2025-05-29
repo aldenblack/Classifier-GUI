@@ -23,7 +23,7 @@ To assign your count number to the image, the "0 Eggs", "1 Egg", and "Custom" bu
 
 #### Click to Count
 
-You can also create custom counts by clicking on parts of the tile to mark them with a dot. This is useful if you have an especially dense tile (e.g. 20+ eggs) and you want to keep track of the amount you've counted. Click 'C', 'S', 'Enter', 'Space', or the "Custom" button to submit counts. You can add or remove from the tally you count with the arrow keys, like in the previous section. 
+You can also create custom counts by clicking on parts of the tile to mark them with a dot. Click dots again to remove them. This is useful if you have an especially dense tile (e.g. 20+ eggs) and you want to keep track of the amount you've counted. Click 'C', 'S', 'Enter', 'Space', or the "Custom" button to submit counts. You can add or remove from the tally you count with the arrow keys, like in the previous section. 
 
 ![dense cluster](https://github.com/aldenblack/Classifier-GUI/blob/main/Classifier-GUI-cluster.png?raw=true)
 
