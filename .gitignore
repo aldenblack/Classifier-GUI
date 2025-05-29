@@ -1,0 +1,6 @@
+.python-version
+.DS_store
+build
+dist
+classifier-gui.spec
+__pycache__
