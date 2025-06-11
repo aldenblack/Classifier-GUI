@@ -4,6 +4,7 @@ import csv
 import image_shredder
 import re
 import math
+from natsort import natsorted
 
 # Initialize Pygame
 pygame.init()
@@ -38,6 +39,9 @@ start_text = font.render('Drag your file here to get started!', True, cyan)
 start_textRect = start_text.get_rect()
 start_textRect.center = (WIDTH // 2, HEIGHT // 2)
 
+loading_text = font.render('Loading...', True, cyan)
+loading_textRect = loading_text.get_rect()
+loading_textRect.center = (WIDTH // 2, HEIGHT // 2)
 
 buttonfont = pygame.font.Font('freesansbold.ttf', 16)
 
@@ -76,14 +80,7 @@ buttonU_Rect = button1_textRect.scale_by(3)
 buttonU_Rect.center = (int(WIDTH - 1/8 * WIDTH), int(HEIGHT - HEIGHT/7))
 buttonU_textRect.center = buttonU_Rect.center
 
-def smartsort(l): 
-  temp = []
-  for i in l:
-    digits = re.findall('\d+', i)
-    smartval = int(digits[0] + '0'*(2-len(digits[1])) + digits[1] + '0'*(3-len(digits[2])) + digits[2])
-    temp.append((smartval, i))  
-  temp.sort()
-  return [i[1] for i in temp]
+
 
 def get_pt(tile_name): 
   ''' Takes in a tile path name and returns the value of the slice '''
@@ -110,6 +107,8 @@ while gettingFile:
             directory = os.path.dirname(file_path)
             file = file_path[len(directory)+1:]
             gettingFile = False
+            scrn.fill(background)
+            scrn.blit(loading_text, loading_textRect)
     pygame.display.flip()
 
 
@@ -140,9 +139,24 @@ if not os.path.isfile(csv_path):
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(["Image", "Part", "Count", "Whitespace"])
     tile_names = [t for t in os.listdir(slice_path)]
-    tile_names = smartsort(tile_names)
-    writer.writerows([tile[:tile.index("pt")-1]] + [get_pt(tile)] + [None] + [None] for tile in tile_names)
+    tile_names = natsorted(tile_names)
+    pattern = "eggs.+count" # FIXME: SLOW
+    t = 0
+    while t < len(tile_names):
+      if (not (tile_names[t][-4:] == '.jpg' or tile_names[t][-4:] == '.png')) or tile_names[t].startswith('.'):
+        del tile_names[t] #Exclude non images
+      else:
+        old_count = re.search(pattern, tile_names[t], re.DEBUG) #For transferring old classifications to the new system
+        if old_count is None: 
+          val = None # No old classification
+        else: 
+          val = old_count.group()[4:-5]
+          if val == "unsure":
+            val.capitalize()
+        writer.writerows([tile[:tile.index("pt")-1]] + [get_pt(tile)] + [val] + [None] for tile in tile_names)
+        t += 1
 
+print(f"CSV Path: {csv_path}")
 
 # Clear whitespaces
 def tile_from_csv(name, part):
@@ -265,6 +279,7 @@ NORMAL = 0
 CUSTOM = 1
 mode = NORMAL
 classify_value = 0
+show_all_tiles = False
 print("Starting...")
 current_tile, current_cap = next_image(csv_path)
 imgscale = int(5/8 * HEIGHT)
@@ -275,10 +290,12 @@ height_offset = int(3/32 * HEIGHT)
 nocap = False
 try:
   cap_img = pygame.image.load(file_path+"/"+f"{current_cap}")
+  scale_ratio = imgscale/cap_img.get_width()
+  tile_indent = int(((cap_img.get_width()%75)/2)*scale_ratio)
   cap_img = pygame.transform.scale(cap_img, (imgscale, imgscale))
-  tile_rect_H = int(cap_img.get_width()/10)
-  tile_Rect = pygame.Rect((width_offset+(math.floor((get_pt(current_tile)-1)/10))*tile_rect_H, 
-        height_offset+(((get_pt(current_tile)-1)%10)*tile_rect_H)), (tile_rect_H, tile_rect_H))
+  tile_rect_H = math.ceil((cap_img.get_width()-(2*tile_indent))/10)
+  tile_Rect = pygame.Rect((width_offset+tile_indent+(math.floor((get_pt(current_tile)-1)/10))*tile_rect_H, 
+        height_offset+tile_indent+(((get_pt(current_tile)-1)%10)*tile_rect_H)), (tile_rect_H, tile_rect_H))
   tile_img_Rect = pygame.Rect(WIDTH-imgscale-width_offset, height_offset, imgscale, imgscale)
 except: 
   nocap = True
@@ -346,12 +363,16 @@ while running:
 
 
     # Image
-    #NOTE: check if path exists before displaying. If it doesn't, still display tile.
     if nocap:
       scrn.blit(tile_img, (int((WIDTH-imgscale)/2), height_offset))
     else:
       scrn.blit(cap_img, (width_offset, height_offset))
       scrn.blit(tile_img, (WIDTH-imgscale-width_offset, height_offset))
+      if show_all_tiles:
+        for i in range(1, 101):
+          tilegrid_Rect = pygame.Rect((width_offset+tile_indent+(math.floor((i-1)/10))*tile_rect_H, 
+              height_offset+tile_indent+(((i-1)%10)*tile_rect_H)), (tile_rect_H, tile_rect_H))
+          pygame.draw.rect(scrn, black, tilegrid_Rect, button_outline)
       pygame.draw.rect(scrn, yellow, tile_Rect, button_outline)
 
     for dot in dots:
@@ -400,6 +421,8 @@ while running:
               if event.key == pygame.K_s:
                 classify_event = True
                 classify_value = custom_count
+              if event.key == pygame.K_t:
+                show_all_tiles = not show_all_tiles
               if event.key == pygame.K_c or event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                 classify_event = True
                 classify_value = custom_count
@@ -475,10 +498,13 @@ while running:
       tile_img = pygame.image.load(slice_path+"/"+f"{current_tile}")
       tile_img = pygame.transform.scale(tile_img, (imgscale, imgscale))
       if not nocap:
-        cap_img = pygame.image.load(file_path+"/"+f"{current_cap}")
-        cap_img = pygame.transform.scale(cap_img, (imgscale, imgscale))
-        tile_Rect = pygame.Rect((width_offset+(math.floor((get_pt(current_tile)-1)/10))*tile_rect_H, 
-              height_offset+(((get_pt(current_tile)-1)%10)*tile_rect_H)), (tile_rect_H, tile_rect_H))
+        try: # check if path exists before displaying. If it doesn't, still display tile.
+          cap_img = pygame.image.load(file_path+"/"+f"{current_cap}")
+          cap_img = pygame.transform.scale(cap_img, (imgscale, imgscale))
+        except:
+          cap_img = pygame.Surface((imgscale, imgscale))
+        tile_Rect = pygame.Rect((width_offset+tile_indent+(math.floor((get_pt(current_tile)-1)/10))*tile_rect_H, 
+              height_offset+tile_indent+(((get_pt(current_tile)-1)%10)*tile_rect_H)), (tile_rect_H, tile_rect_H))
       progress_bar_text = progressfont.render(f'{progress-1} / {total-1}', True, beige)
       progress_bar_textRect = buttonU_text.get_rect()
       progress_bar_textRect.center = progress_bar_Rect.center
@@ -500,6 +526,4 @@ while running:
 
 pygame.quit()
 
-# TODO: Add highlighting for custom count. Click to add a dot, which increments custom count. Enter to submit.
-# if you click a previous dot, it's deleted. 
 
