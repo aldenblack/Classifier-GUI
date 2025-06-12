@@ -9,21 +9,21 @@ This is a GUI designed to help with classifying images by the amount of a given 
 ### Opening Your File
 
 First, drag the folder of images you want to classify over to the Classifier GUI window. If the folder contains full cap images, a new file called 
-\<filename>-sliced, which contains all of the tiles, will be generated in the same directory as the original. An additional file called <filename>.csv will be generated in that directory, which contains all of the counts for your data. Do not manually edit this — this is the file you will send when you finish counting a dataset. 
+\<filename>-sliced, which contains all of the tiles, will be generated in the same directory as the original. An additional file called \<filename>.csv will be generated in that directory, which contains all of the counts for your data. Do not manually edit this — this is the file you will send when you finish counting a dataset. 
 
 If your folder contains tiles already, then make sure its name is of the form "\<filename>-sliced", and that there is another folder in the same directory named \<filename>. If you do this, you will be able to see each tile side by side with the source image, which can help with discerning confusing details on a tile.
 
 ### Classifying Tiles
 
-To classify the tiles, you can use the buttons available or the certain hotkeys on your keyboard. All progress is immediately and automatically saved in your csv file, so do not worry about closing the GUI and opening it later.
+To classify the tiles, you can use the buttons available or certain hotkeys on your keyboard. All progress is immediately and automatically saved in your csv file, so do not worry about closing the GUI and opening it later.
 
 #### Numerical Classification
 
-To assign your count number to the image, the "0 Eggs", "1 Egg", and "Custom" buttons can be clicked. Alternately, any of the number keys work as hotkeys for classifying tiles with 0-9 eggs. For images with 10 or more eggs, use the arrow keys (up and down) to increase or decrease the amount of eggs on the "Custom" button. Then, either click the "Custom" button or click the 'C' or 'S' key on your keyboard.
+To assign your count number to the image, the "0 Eggs", "1 Egg", and "Custom" buttons can be clicked. Alternately, any of the number keys work as hotkeys for classifying tiles with 0-9 eggs. For images with 10 or more eggs, use the arrow keys (up and down) to increase or decrease the amount of eggs on the "Custom" button. Then, either click the "Custom" button or click the 'C', 'S', 'Return', or 'Space' key on your keyboard.
 
 #### Click to Count
 
-You can also create custom counts by clicking on parts of the tile to mark them with a dot. Click dots again to remove them. This is useful if you have an especially dense tile (e.g. 20+ eggs) and you want to keep track of the amount you've counted. Click 'C', 'S', 'Enter', 'Space', or the "Custom" button to submit counts. You can add or remove from the tally you count with the arrow keys, like in the previous section. 
+You can also create custom counts by clicking on parts of the tile to mark them with a dot. Click dots again to remove them. This is useful if you have an especially dense tile (e.g. 20+ eggs) and you want to keep track of the amount you've counted. Click 'C', 'S', 'Return', 'Space', or the "Custom" button to submit counts. You can add or remove from the tally you count with the arrow keys, like in the previous section. 
 
 ![dense cluster](https://github.com/aldenblack/Classifier-GUI/blob/main/Classifier-GUI-cluster.png?raw=true)
 
