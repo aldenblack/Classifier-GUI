@@ -597,3 +597,4 @@ while running:
 pygame.quit()
 
 
+#Build: python3 -m PyInstaller -w classifier-gui.py --icon=egg_icon.png

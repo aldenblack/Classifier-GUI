@@ -1,4 +1,4 @@
-# Fecundity Data Classifier GUI
+# Fecundity Data Classifier GUI ![egg icon](https://github.com/aldenblack/Classifier-GUI/blob/main/egg_icon.png?raw=true)
 
 This is a GUI designed to help with classifying images by the amount of a given object in them. The intended use case is for counting fly eggs from images from a fecundity assay. Each image is split into 100 tiles, each of which should be counted according to the number of eggs more than halfway on screen. 
 
@@ -40,6 +40,6 @@ Note that the GUI automatically ignores tiles with too much whitespace, which is
 
 ## Installation
 
-[Windows Download]() (In Progress)
+[Windows Download](https://github.com/aldenblack/Classifier-GUI/releases/download/v1.1.0/classifier_gui_windows_v1.1.0.zip) 
 
-[Mac Download]()
+[Mac Download](https://github.com/aldenblack/Classifier-GUI/releases/download/v1.1.0/classifier_gui_mac_v1.1.0.zip)

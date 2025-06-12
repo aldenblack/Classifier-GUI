@@ -4,4 +4,3 @@ build
 dist
 classifier-gui.spec
 __pycache__
-egg_icon.png
