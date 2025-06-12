@@ -43,6 +43,30 @@ loading_text = font.render('Loading...', True, cyan)
 loading_textRect = loading_text.get_rect()
 loading_textRect.center = (WIDTH // 2, HEIGHT // 2)
 
+genTiles_text = font.render('Generating Tiles...', True, cyan)
+genTiles_textRect = genTiles_text.get_rect()
+genTiles_textRect.center = (WIDTH // 2, HEIGHT // 2)
+
+genCSV_text = font.render('Generating CSV...', True, cyan)
+genCSV_textRect = genCSV_text.get_rect()
+genCSV_textRect.center = (WIDTH // 2, HEIGHT // 2)
+
+genCSVprogress_text = font.render('0 / 0', True, cyan)
+genCSVprogress_textRect = genCSVprogress_text.get_rect()
+genCSVprogress_textRect.center = (WIDTH // 2, int((5/8) * HEIGHT))
+
+checkWhitespace_text = font.render('Checking Whitespaces...', True, cyan)
+checkWhitespace_textRect = checkWhitespace_text.get_rect()
+checkWhitespace_textRect.center = (WIDTH // 2, HEIGHT // 2)
+
+clearWhitespace_text = font.render('Clearing Whitespaces...', True, cyan)
+clearWhitespace_textRect = clearWhitespace_text.get_rect()
+clearWhitespace_textRect.center = (WIDTH // 2, HEIGHT // 2)
+
+whitespaceprogress_text = font.render('0 / 0', True, cyan)
+whitespaceprogress_textRect = whitespaceprogress_text.get_rect()
+whitespaceprogress_textRect.center = (WIDTH // 2, int((5/8) * HEIGHT))
+
 buttonfont = pygame.font.Font('freesansbold.ttf', 16)
 
 progressfont = pygame.font.Font('freesansbold.ttf', 12)
@@ -50,34 +74,34 @@ progressfont = pygame.font.Font('freesansbold.ttf', 12)
 button1_text = buttonfont.render('1 Egg', True, beige)
 button1_textRect = button1_text.get_rect()
 button1_Rect = button1_textRect.scale_by(3)
-button1_Rect.center = (int(WIDTH - 5.5/8 * WIDTH), int(HEIGHT - HEIGHT/7))
+button1_Rect.center = (int(2.5/8 * WIDTH), int((6/7)*HEIGHT)) 
 button1_textRect.center = button1_Rect.center
 
 button2_text = buttonfont.render('Unsure', True, beige)
 button2_textRect = button2_text.get_rect()
 button2_Rect = button1_textRect.scale_by(3)
-button2_Rect.center = (int(WIDTH - 2.5/8 * WIDTH), int(HEIGHT - HEIGHT/7))
+button2_Rect.center = (int(5.5/8 * WIDTH), int((6/7)*HEIGHT))
 button2_textRect.center = button2_Rect.center
 
 
 button0_text = buttonfont.render('0 Eggs', True, beige)
 button0_textRect = button0_text.get_rect()
 button0_Rect = button1_textRect.scale_by(3)
-button0_Rect.center = (int(WIDTH - 7/8 * WIDTH), int(HEIGHT - HEIGHT/7))
+button0_Rect.center = (int(1/8 * WIDTH), int((6/7)*HEIGHT))
 button0_textRect.center = button0_Rect.center
 
 custom_count = 10
 buttonC_text = buttonfont.render(f'Custom: {custom_count}', True, beige)
 buttonC_textRect = buttonC_text.get_rect()
 buttonC_Rect = button1_textRect.scale_by(3)
-buttonC_Rect.center = (int(WIDTH - 4/8 * WIDTH), int(HEIGHT - HEIGHT/7))
+buttonC_Rect.center = (int(4/8 * WIDTH), int((6/7)*HEIGHT))
 buttonC_textRect.center = buttonC_Rect.center
 
 
 buttonU_text = buttonfont.render('Undo', True, beige)
 buttonU_textRect = buttonU_text.get_rect()
 buttonU_Rect = button1_textRect.scale_by(3)
-buttonU_Rect.center = (int(WIDTH - 1/8 * WIDTH), int(HEIGHT - HEIGHT/7))
+buttonU_Rect.center = (int(7/8 * WIDTH), int((6/7)*HEIGHT))
 buttonU_textRect.center = buttonU_Rect.center
 
 
@@ -116,6 +140,7 @@ while gettingFile:
 slice_path = file_path
 if file.endswith("sliced"):
   csv_path = directory + "/" + file[:file.index("sliced")-1] + ".csv"
+  file_path = slice_path[:slice_path.index("sliced")-1]
 else:
   csv_path = f"{directory}/{file}.csv"
   if not (os.path.isdir(f"{file_path}-sliced")):
@@ -126,6 +151,9 @@ else:
     width = first_image.get_width()
     if (height != 75 or width != 75):
       # Generate slices
+      scrn.fill(background)
+      scrn.blit(genTiles_text, genTiles_textRect)
+      pygame.display.flip()
       image_shredder.main(file_path)
       slice_path += "-sliced"
   else:
@@ -140,21 +168,41 @@ if not os.path.isfile(csv_path):
     writer.writerow(["Image", "Part", "Count", "Whitespace"])
     tile_names = [t for t in os.listdir(slice_path)]
     tile_names = natsorted(tile_names)
-    pattern = "eggs.+count" # FIXME: SLOW
+    display_len = len(tile_names)
+    display_t = 0
     t = 0
     while t < len(tile_names):
       if (not (tile_names[t][-4:] == '.jpg' or tile_names[t][-4:] == '.png')) or tile_names[t].startswith('.'):
         del tile_names[t] #Exclude non images
+        display_t += 1
       else:
-        old_count = re.search(pattern, tile_names[t], re.DEBUG) #For transferring old classifications to the new system
-        if old_count is None: 
-          val = None # No old classification
-        else: 
-          val = old_count.group()[4:-5]
-          if val == "unsure":
-            val.capitalize()
-        writer.writerows([tile[:tile.index("pt")-1]] + [get_pt(tile)] + [val] + [None] for tile in tile_names)
+        tile_name = tile_names[t][:tile_names[t].index("pt")-1]
+        if tile_names[t].startswith("eggs"):
+          try:
+            val = tile_names[t][4:tile_names[t].index("count")]
+            if val == "unsure":
+              val.capitalize()
+            #Rename original file to exclude the eggsNcount part of the name
+            old_path = tile_names[t]
+            new_path = old_path[old_path.index('count')+5:]
+            #If val is not none, exclude eggsNcount from tile name
+            tile_name = tile_name[tile_name.index('count')+5:] 
+            if os.path.isfile(os.path.join(slice_path, old_path)): 
+              os.rename(os.path.join(slice_path, old_path), os.path.join(slice_path, new_path))
+          except: # if "count" doesn't appear
+            val = None
+        else:
+          val = None        
+        writer.writerow([tile_name] + [get_pt(tile_names[t])] + [val] + [None])
         t += 1
+        display_t += 1
+      genCSVprogress_text = font.render(f'{display_t} / {display_len}', True, cyan)
+      genCSVprogress_textRect = genCSVprogress_text.get_rect()
+      genCSVprogress_textRect.center = (WIDTH // 2, int((5/8) * HEIGHT))
+      scrn.fill(background)
+      scrn.blit(genCSV_text, genCSV_textRect)
+      scrn.blit(genCSVprogress_text, genCSVprogress_textRect)
+      pygame.display.flip()
 
 print(f"CSV Path: {csv_path}")
 
@@ -166,6 +214,9 @@ PART = 1
 COUNT = 2
 WHITESPACE = 3
 print("Checking Whitespaces...")
+scrn.fill(background)
+scrn.blit(checkWhitespace_text, checkWhitespace_textRect)
+pygame.display.flip()
 with open(csv_path, mode='r') as original:
     check_reader = csv.reader(original, delimiter=',', quotechar='|')
     headings = next(check_reader)
@@ -180,13 +231,26 @@ else:
     writer = csv.writer(newfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     start = True
     oldfile.seek(0)
+    row_count = sum(1 for row in reader)
+    oldfile.seek(0)
+    reader_index = 1
     for row in reader:
+      print(row)
+      scrn.fill(background)
+      whitespaceprogress_text = font.render(f'{reader_index} / {row_count}', True, cyan)
+      whitespaceprogress_textRect = whitespaceprogress_text.get_rect()
+      whitespaceprogress_textRect.center = (WIDTH // 2, int((5/8) * HEIGHT))
+      scrn.blit(clearWhitespace_text, clearWhitespace_textRect)
+      scrn.blit(whitespaceprogress_text, whitespaceprogress_textRect)
+      pygame.display.flip()
       if start:
         writer.writerow(["Image", "Part", "Count", "Whitespace"])
         start = False
       else:
+        reader_index += 1
         tile = tile_from_csv(row[IMAGE], row[PART])
         tilepath = os.path.join(slice_path, tile)
+        has_whitespace = False
         if os.path.isfile(tilepath):
           file_size_kb = os.stat(tilepath).st_size / 1024
           if file_size_kb <= 1.46:
@@ -194,8 +258,9 @@ else:
             count = 0
           else:
             has_whitespace = False
-            count = None
-        writer.writerow([row[IMAGE]] + [row[PART]] + [count] + [has_whitespace])
+        if not has_whitespace:
+          count = row[COUNT]
+        writer.writerow([row[IMAGE]] + [row[PART]] + [count] + [has_whitespace]) # why would I add something that isn't a tile?
   os.replace(csv_temp, csv_path)
 
 
@@ -257,6 +322,9 @@ def next_image(csv_path):
         img = row[IMAGE]
         pt = row[PART]
         return tile_from_csv(img, pt), f"{img}.png"
+    img = row[IMAGE] # If no next image, just keep to the last one
+    pt = row[PART]
+    return tile_from_csv(img, pt), f"{img}.png"
 
 def how_many_counted(csv_path):
   counted = 0
@@ -489,10 +557,12 @@ while running:
           update_custom = True
     if classify_event: 
       classify_tile(classify_value, csv_path)
-      progress += 1
+      if progress < total:
+        progress += 1
     if undo_event: 
       undo_tile(csv_path)
-      progress -= 1
+      if progress > 1:
+        progress -= 1
     if classify_event or undo_event:
       current_tile, current_cap = next_image(csv_path)
       tile_img = pygame.image.load(slice_path+"/"+f"{current_tile}")
