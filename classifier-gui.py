@@ -167,7 +167,16 @@ if not os.path.isfile(csv_path):
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(["Image", "Part", "Count", "Whitespace"])
     tile_names = [t for t in os.listdir(slice_path)]
-    tile_names = natsorted(tile_names)
+    # Generate a list to order using the name of each tile, without old egg count
+    tile_numbering = []
+    for t in range(len(tile_names)):
+      current_tile = tile_names[t]
+      if tile_names[t].startswith("eggs"):
+        tile_numbering.append((current_tile[current_tile.index('count')+5:], current_tile))
+      else:
+        tile_numbering.append((current_tile, current_tile))
+    # sort by name, then save the actual name of the tile (not used for sorting)
+    tile_names = [row[1] for row in natsorted(tile_numbering)]
     display_len = len(tile_names)
     display_t = 0
     t = 0
@@ -499,6 +508,15 @@ while running:
                 classify_value = "Unsure"
               if event.key == pygame.K_z:
                 undo_event = True
+              if event.key == pygame.K_f: # Toggle Fullscreen #TODO: for version 1.1.1
+                if infoObject.current_h == HEIGHT:
+                  HEIGHT = int(infoObject.current_h/(2**0.5))
+                  WIDTH = int(infoObject.current_w/(2**0.5))
+                else:
+                  HEIGHT = infoObject.current_h
+                  WIDTH = infoObject.current_w
+                #TODO: also need to redefine every rect for buttons, images, and the progress bar with the new dimensions.
+                scrn = pygame.display.set_mode((WIDTH, HEIGHT))
               if event.key == pygame.K_UP:
                 custom_count += 1
                 buttonC_text = buttonfont.render(f'Custom: {custom_count}', True, beige)
