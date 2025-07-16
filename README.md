@@ -40,6 +40,6 @@ Note that the GUI automatically ignores tiles with too much whitespace, which is
 
 ## Installation
 
-[Windows Download](https://github.com/aldenblack/Classifier-GUI/releases/download/v1.1.0/classifier_gui_windows_v1.1.0.zip) 
+[Windows Download](https://github.com/aldenblack/Classifier-GUI/releases/download/v1.1.1/classifier_gui_windows_v1.1.1.zip) 
 
-[Mac Download](https://github.com/aldenblack/Classifier-GUI/releases/download/v1.1.0/classifier_gui_mac_v1.1.0.zip)
+[Mac Download](https://github.com/aldenblack/Classifier-GUI/releases/download/v1.1.1/classifier_gui_mac_v1.1.1.zip)
